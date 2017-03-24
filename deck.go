@@ -59,10 +59,3 @@ func (d *Deck) Print() {
 func init() {
     rand.Seed(time.Now().UnixNano())
 }
-
-func main() {
-    deck := NewDeck()
-    deck.Shuffle()
-    fmt.Println(deck.Draw())
-    deck.Print()
-}
