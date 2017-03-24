@@ -7,58 +7,51 @@ import (
 )
 
 type Deck struct {
-    cards [16]*Card
+    Cards []*Card
     index int
 }
 
 func NewDeck() *Deck {
     d := &Deck{}
     d.index = 0
-    deck := &d.cards
+    deck := make([]*Card, 0, 16)
 
-    start := 0
-    i := 0
-
-    for i = 0; i < 5; i++ {
-        deck[start + i] = Batman()
+    for i := 0; i < 5; i++ {
+        deck = append(deck, Batman())
     }
 
-    start += i
-
-    for i = 0; i < 2; i++ {
-        deck[start + i] = Catwoman()
-        deck[start + i + 1] = Bane()
-        deck[start + i + 2] = Robin()
-        deck[start + i + 3] = PoisonIvy()
-        start += i + 3
+    for i := 0; i < 2; i++ {
+        deck = append(deck, Catwoman())
+        deck = append(deck, Bane())
+        deck = append(deck, Robin())
+        deck = append(deck, PoisonIvy())
     }
 
-    start++
+    deck = append(deck, TwoFace())
+    deck = append(deck, HarleyQuinn())
+    deck = append(deck, Joker())
 
-    deck[start] = TwoFace()
-    deck[start + 1] = HarleyQuinn()
-    deck[start + 2] = Joker()
-
+    d.Cards = deck
     return d
 }
 
 func (d *Deck) Shuffle() {
-    for i := range d.cards {
+    for i := range d.Cards {
         j := rand.Intn(i + 1)
 
-        d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
+        d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
     }
 }
 
 func (d *Deck) Draw() *Card {
-    drawn := d.cards[d.index]
+    drawn := d.Cards[d.index]
     d.index++
 
     return drawn
 }
 
 func (d *Deck) Print() {
-    for i, c := range d.cards {
+    for i, c := range d.Cards {
         fmt.Printf("%d: %s\n", i, c.name)
     }
 }
@@ -71,4 +64,5 @@ func main() {
     deck := NewDeck()
     deck.Shuffle()
     fmt.Println(deck.Draw())
+    deck.Print()
 }
