@@ -2,6 +2,7 @@ package main
 
 import (
     "bufio"
+    "bytes"
     "fmt"
     "os"
     "strconv"
@@ -20,27 +21,48 @@ type Player struct {
     out bool
 }
 
-func (p *Player) prompt(msg string) int {
+func (p *Player) options(me bool) string {
+    var options bytes.Buffer
+
+    options.WriteRune('[')
+
+    for i, _ := range p.players {
+        if me || i != p.index {
+            options.WriteRune('0' + rune(i))
+
+            if i < len(p.players) - 1 {
+                options.WriteString(", ")
+            }
+        }
+    }
+
+    options.WriteRune(']')
+
+    return options.String()
+}
+
+func (p *Player) prompt(msg string, me bool) int {
     reader := bufio.NewReader(os.Stdin)
-    idx := 0
 
     for {
-        fmt.Printf("%s: ", msg)
+        fmt.Printf("%s %s: ", msg, p.options(me))
         text, _ := reader.ReadString('\n')
         text = strings.Replace(text, "\n", "", -1)
 
         idx, err := strconv.Atoi(text)
 
-        if err == nil && idx >= 0 && idx < len(p.players) {
-            break
+        if err == nil &&
+           idx >= 0 &&
+           idx < len(p.players) &&
+           (idx != p.index || me) {
+               return idx
         }
     }
 
-    return idx
 }
 
 func (p *Player) status(msg string) {
-    fmt.Printf("Player '%s' %s\n", p.name, msg)
+    fmt.Printf("Player %s %s\n", p.name, msg)
 }
 
 func (p *Player) Win() {
@@ -74,7 +96,7 @@ func (p *Player) Lose() {
 }
 
 func (p *Player) Discard() {
-    target := p.prompt("Player to make discard")
+    target := p.prompt("Player to make discard", true)
     p.players[target].makeDiscard()
 }
 
@@ -84,13 +106,23 @@ func (p *Player) makeDiscard() {
 func (p *Player) Nop() {
 }
 
+func (p *Player) Look() {
+    target := p.prompt("Player's hand to look at", false)
+    p.players[target].ShowHand()
+}
+
+func (p *Player) ShowHand() {
+    fmt.Printf("[%s]\n", p.hand[0].name)
+}
+
 func NewPlayer(name string, deck *Deck) *Player {
     p := &Player{}
 
     p.actionMap = map[string]func(){
         "immune": p.Immune,
         "lose": p.Lose,
-        "nop": n.Nop,
+        "look": p.Look,
+        "nop": p.Nop,
     }
 
     p.deck = deck

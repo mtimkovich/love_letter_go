@@ -4,6 +4,7 @@ package main
 
 func main() {
     deck := NewDeck()
+    deck.Cards[0] = Catwoman()
 
     players := make([]*Player, 0, 4)
 
