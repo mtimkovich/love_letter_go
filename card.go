@@ -47,7 +47,6 @@ func Robin() *Card {
     return c
 }
 
-
 func PoisonIvy() *Card {
     c := &Card{}
     c.name = "Poison Ivy"
@@ -57,7 +56,6 @@ func PoisonIvy() *Card {
 
     return c
 }
-
 
 func TwoFace() *Card {
     c := &Card{}
@@ -69,7 +67,6 @@ func TwoFace() *Card {
     return c
 }
 
-
 func HarleyQuinn() *Card {
     c := &Card{}
     c.name = "Harley Quinn"
@@ -79,7 +76,6 @@ func HarleyQuinn() *Card {
 
     return c
 }
-
 
 func Joker() *Card {
     c := &Card{}

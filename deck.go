@@ -32,6 +32,7 @@ func NewDeck() *Deck {
     deck = append(deck, Joker())
 
     d.Cards = deck
+    d.Shuffle()
     return d
 }
 
