@@ -4,7 +4,7 @@ package main
 
 func main() {
     deck := NewDeck()
-    deck.Cards[0] = Catwoman()
+    deck.Cards[0] = Bane()
 
     players := make([]*Player, 0, 4)
 
@@ -21,5 +21,7 @@ func main() {
     // two := players[1]
 
     one.Draw()
+
+    one.ShowHand()
     one.Play(0)
 }

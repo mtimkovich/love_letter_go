@@ -1,10 +1,16 @@
 package main
 
+import "fmt"
+
 type Card struct {
     name string
     value int
     rules string
     action string
+}
+
+func (c *Card) Print() string {
+    return fmt.Sprintf("%s(%d)", c.name, c.value)
 }
 
 func Batman() *Card {
