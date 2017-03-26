@@ -9,7 +9,7 @@ type Card struct {
     action string
 }
 
-func (c *Card) Print() string {
+func (c *Card) String() string {
     return fmt.Sprintf("%s(%d)", c.name, c.value)
 }
 

@@ -29,19 +29,17 @@ func remove(a []*Card, i int) []*Card {
 
 func (p *Player) options(me bool) string {
     var options bytes.Buffer
+    numeros := make([]string, 0, len(p.players))
 
     options.WriteRune('[')
 
     for i, _ := range p.players {
-        if me || i != p.index {
-            options.WriteRune('0' + rune(i))
-
-            if i < len(p.players) - 1 {
-                options.WriteString(", ")
-            }
+        if (me || i != p.index) {
+            numeros = append(numeros, strconv.Itoa(i))
         }
     }
 
+    options.WriteString(strings.Join(numeros, ", "))
     options.WriteRune(']')
 
     return options.String()
@@ -75,7 +73,24 @@ func (p *Player) Draw() {
     p.hand = append(p.hand, p.deck.Draw())
 }
 
-func (p *Player) Play(cardIndex int) {
+func (p *Player) Play() {
+    reader := bufio.NewReader(os.Stdin)
+    var err error
+    var cardIndex int
+
+    for {
+        fmt.Print("Card to play: ")
+        text, _ := reader.ReadString('\n')
+        text = strings.Replace(text, "\n", "", -1)
+
+        cardIndex, err = strconv.Atoi(text)
+
+        if err == nil &&
+        cardIndex >= 0 &&
+        cardIndex < 2 {
+            break
+        }
+    }
 
     card := p.hand[cardIndex]
 
@@ -99,27 +114,56 @@ func (p *Player) Lose() {
 
 func (p *Player) Discard() {
     target := p.prompt("Player to make discard", true)
-    p.players[target].makeDiscard()
+    other := p.players[target]
+
+    if other.isImmune {
+        other.status("is immune")
+        return
+    }
+
+    other.makeDiscard()
 }
 
 func (p *Player) makeDiscard() {
+    card := p.hand[0]
+    p.status(fmt.Sprintf("discarded %s", card.String()))
+
+    if card.name == "Joker" {
+        p.Lose()
+    }
+
+    p.hand = remove(p.hand, 0)
+
+    if !p.out {
+        p.Draw()
+    }
 }
 
-func (p *Player) Nop() {
-}
+func (p *Player) Nop() {}
 
 func (p *Player) Look() {
     target := p.prompt("Player's hand to look at", false)
-    p.players[target].ShowHand()
+    other := p.players[target]
+
+    if other.isImmune {
+        other.status("is immune")
+        return
+    }
+
+    other.ShowHand()
 }
 
 func (p *Player) Compare() {
-    // target := p.prompt("Player whose hand to compare to", false)
-    fmt.Println("Player whose hand to compare to [1]: 1")
-    target := 1
+    target := p.prompt("Player whose hand to compare to", false)
     other := p.players[target]
+
+    if other.isImmune {
+        other.status("is immune")
+        return
+    }
+
     fmt.Printf("Player %s has %s, Player %s has %s\n",
-               p.name, p.hand[0].Print(), other.name, other.hand[0].Print())
+               p.name, p.hand[0].String(), other.name, other.hand[0].String())
 
     c := p.hand[0].value - other.hand[0].value
 
@@ -132,10 +176,25 @@ func (p *Player) Compare() {
     }
 }
 
+func (p *Player) Trade() {
+    target := p.prompt("Player to trade hands with", false)
+    other := p.players[target]
+
+    if other.isImmune {
+        other.status("is immune")
+        return
+    }
+
+    p.hand[0], other.hand[0] = other.hand[0], p.hand[0]
+
+    fmt.Print("New hand: ")
+    p.ShowHand()
+}
+
 func (p *Player) ShowHand() {
     fmt.Print("[")
     for i, c := range p.hand {
-        fmt.Printf("%d: %s", i, c.Print())
+        fmt.Printf("%d: %s", i, c.String())
 
         if i < len(p.hand) - 1 {
             fmt.Print(", ")
@@ -153,6 +212,8 @@ func NewPlayer(name string, deck *Deck) *Player {
         "look": p.Look,
         "nop": p.Nop,
         "compare": p.Compare,
+        "trade": p.Trade,
+        "discard": p.Discard,
     }
 
     p.deck = deck
