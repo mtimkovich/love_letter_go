@@ -64,6 +64,33 @@ func (p *Player) prompt(msg string, me bool) int {
     }
 }
 
+func strRange(end int) string {
+    arr := make([]string, 0)
+    for i := 0; i < end; i++ {
+        arr = append(arr, strconv.Itoa(i))
+    }
+
+    return strings.Join(arr, ", ")
+}
+
+func (p *Player) promptNum(msg string, end int) int {
+    reader := bufio.NewReader(os.Stdin)
+
+    for {
+        fmt.Printf("%s [%s]: ", msg, strRange(end))
+        text, _ := reader.ReadString('\n')
+        text = strings.Replace(text, "\n", "", -1)
+
+        num, err := strconv.Atoi(text)
+
+        if err == nil &&
+        num >= 0 &&
+        num < end {
+            return num
+        }
+    }
+}
+
 func (p *Player) status(msg string) {
     fmt.Printf("Player %s %s\n", p.name, msg)
 }
@@ -74,24 +101,7 @@ func (p *Player) Draw() {
 }
 
 func (p *Player) Play() {
-    reader := bufio.NewReader(os.Stdin)
-    var err error
-    var cardIndex int
-
-    for {
-        fmt.Print("Card to play: ")
-        text, _ := reader.ReadString('\n')
-        text = strings.Replace(text, "\n", "", -1)
-
-        cardIndex, err = strconv.Atoi(text)
-
-        if err == nil &&
-        cardIndex >= 0 &&
-        cardIndex < 2 {
-            break
-        }
-    }
-
+    cardIndex := p.promptNum("Card to play", 2)
     card := p.hand[cardIndex]
 
     if action, e := p.actionMap[card.action]; e {
@@ -191,6 +201,17 @@ func (p *Player) Trade() {
     p.ShowHand()
 }
 
+func (p *Player) Guess() {
+    target := p.prompt("Player to guess", false)
+    other := p.players[target]
+    guessNum := p.promptNum("Guess card in player's hand", 9)
+
+    if guessNum == other.hand[0].value {
+        p.status(fmt.Sprintf("guessed correctly; Player %s is out", other.name))
+        other.out = true
+    }
+}
+
 func (p *Player) ShowHand() {
     fmt.Print("[")
     for i, c := range p.hand {
@@ -214,6 +235,7 @@ func NewPlayer(name string, deck *Deck) *Player {
         "compare": p.Compare,
         "trade": p.Trade,
         "discard": p.Discard,
+        "guess": p.Guess,
     }
 
     p.deck = deck

@@ -5,7 +5,7 @@ package main
 func main() {
     deck := NewDeck()
     // deck.Draw()
-    deck.Cards[0] = PoisonIvy()
+    deck.Cards[0] = Batman()
     deck.Cards[1] = Joker()
 
     players := make([]*Player, 0, 4)
@@ -20,10 +20,9 @@ func main() {
     }
 
     one := players[0]
-    two := players[1]
+    // two := players[1]
 
     one.Draw()
-    two.Immune()
 
     one.ShowHand()
     one.Play()
