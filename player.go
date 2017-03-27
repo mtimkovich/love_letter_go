@@ -4,9 +4,11 @@ import (
     "bufio"
     "bytes"
     "fmt"
+    "math/rand"
     "os"
     "strconv"
     "strings"
+    "time"
 )
 
 type Player struct {
@@ -19,6 +21,7 @@ type Player struct {
     points int
     isImmune bool
     out bool
+    cpu bool
 }
 
 func remove(a []*Card, i int) []*Card {
@@ -27,33 +30,63 @@ func remove(a []*Card, i int) []*Card {
     return a[:len(a)-1]
 }
 
+func choice(arr []int) int {
+    return arr[rand.Intn(len(arr))]
+}
+
+func joinInts(arr []int, sep string) string {
+    var output bytes.Buffer
+
+    for i, val := range arr {
+        output.WriteString(strconv.Itoa(val))
+
+        if i < len(arr) - 1 {
+            output.WriteString(sep)
+        }
+    }
+
+    return output.String()
+}
+
 func (p *Player) Name() string {
     return fmt.Sprintf("Player %s", p.name)
 }
 
-func (p *Player) options(me bool) string {
-    var options bytes.Buffer
-    numeros := make([]string, 0, len(p.players))
+func (p *Player) options(me bool) []int {
+    output := make([]int, 0, len(p.players))
 
-    options.WriteRune('[')
-
-    for i, _ := range p.players {
-        if (me || i != p.index) {
-            numeros = append(numeros, strconv.Itoa(i))
+    for i, other := range p.players {
+        if (me || i != p.index) && !other.out {
+            output = append(output, i)
         }
     }
 
-    options.WriteString(strings.Join(numeros, ", "))
-    options.WriteRune(']')
-
-    return options.String()
+    return output
 }
+
+func intRange(start int, end int) []int {
+    arr := make([]int, 0)
+    for i := start; i < end; i++ {
+        arr = append(arr, i)
+    }
+
+    return arr
+}
+
 
 func (p *Player) prompt(msg string, me bool) int {
     reader := bufio.NewReader(os.Stdin)
 
     for {
-        fmt.Printf("%s %s: ", msg, p.options(me))
+        options := p.options(me)
+        fmt.Printf("%s [%s]: ", msg, joinInts(options, ", "))
+
+        if p.cpu {
+            o := choice(options)
+            fmt.Println(o)
+            return o
+        }
+
         text, _ := reader.ReadString('\n')
         text = strings.Replace(text, "\n", "", -1)
 
@@ -68,20 +101,19 @@ func (p *Player) prompt(msg string, me bool) int {
     }
 }
 
-func strRange(start int, end int) string {
-    arr := make([]string, 0)
-    for i := start; i < end; i++ {
-        arr = append(arr, strconv.Itoa(i))
-    }
-
-    return strings.Join(arr, ", ")
-}
-
 func (p *Player) promptNum(msg string, start int, end int) int {
     reader := bufio.NewReader(os.Stdin)
 
     for {
-        fmt.Printf("%s [%s]: ", msg, strRange(start, end))
+        options := intRange(start, end)
+        fmt.Printf("%s [%s]: ", msg, joinInts(options, ", "))
+
+        if p.cpu {
+            o := choice(options)
+            fmt.Println(o)
+            return o
+        }
+
         text, _ := reader.ReadString('\n')
         text = strings.Replace(text, "\n", "", -1)
 
@@ -95,23 +127,36 @@ func (p *Player) promptNum(msg string, start int, end int) int {
     }
 }
 
+
 func (p *Player) status(msg string) {
     fmt.Printf("%s %s\n", p.Name(), msg)
 }
 
-func (p *Player) Draw() {
+func (p *Player) Win() {
+    p.status("wins")
+    p.points++
+}
+
+func (p *Player) Draw() bool {
     p.status("draws a card")
-    p.hand = append(p.hand, p.deck.Draw())
+    card := p.deck.Draw()
+
+    if card == nil {
+        return false
+    }
+
+    p.hand = append(p.hand, card)
+    return true
 }
 
 func (p *Player) Play() {
     cardIndex := p.promptNum("Card to play", 0, 2)
     card := p.hand[cardIndex]
+    p.status(fmt.Sprintf("played %s", card.String()))
 
-    if action, e := p.actionMap[card.action]; e {
-        p.hand = remove(p.hand, cardIndex)
-        action()
-    }
+    action := p.actionMap[card.action]
+    p.hand = remove(p.hand, cardIndex)
+    action()
 }
 
 func (p *Player) Immune() {
@@ -162,7 +207,7 @@ func (p *Player) Look() {
         return
     }
 
-    other.ShowHand()
+    other.status(other.ShowHand())
 }
 
 func (p *Player) Compare() {
@@ -199,8 +244,7 @@ func (p *Player) Trade() {
 
     p.hand[0], other.hand[0] = other.hand[0], p.hand[0]
 
-    fmt.Print("New hand: ")
-    p.ShowHand()
+    fmt.Print("New hand: ", p.ShowHand())
 }
 
 func (p *Player) Guess() {
@@ -215,16 +259,20 @@ func (p *Player) Guess() {
     }
 }
 
-func (p *Player) ShowHand() {
-    fmt.Print("[")
+func (p *Player) ShowHand() string {
+    var output bytes.Buffer
+    output.WriteRune('{')
     for i, c := range p.hand {
-        fmt.Printf("%d: %s", i, c.String())
+        output.WriteString(fmt.Sprintf("%d: %s", i, c.String()))
 
         if i < len(p.hand) - 1 {
-            fmt.Print(", ")
+            output.WriteString(", ")
         }
     }
-    fmt.Println("]")
+
+    output.WriteRune('}')
+
+    return output.String()
 }
 
 func NewPlayer(name string, deck *Deck) *Player {
@@ -246,4 +294,8 @@ func NewPlayer(name string, deck *Deck) *Player {
     p.name = name
 
     return p
+}
+
+func init() {
+    rand.Seed(time.Now().UnixNano())
 }

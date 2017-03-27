@@ -1,29 +1,62 @@
 package main
 
-// import "fmt"
+import "fmt"
+
+func playersOut(players []*Player) int {
+    out := 0
+    for _, p := range players {
+        if p.out {
+            out++
+        }
+    }
+
+    return out
+}
 
 func main() {
     deck := NewDeck()
-    // deck.Draw()
-    deck.Cards[0] = Batman()
-    deck.Cards[1] = Joker()
+    deck.Draw()
 
     players := make([]*Player, 0, 4)
 
-    players = append(players, NewPlayer("one", deck))
-    players = append(players, NewPlayer("two", deck))
+    for _, name := range []string{"One", "Two", "Three", "Four"} {
+        players = append(players, NewPlayer(name, deck))
+    }
 
     for i, p := range players {
         p.players = players
         p.index = i
+        p.cpu = true
         p.Draw()
     }
 
-    one := players[0]
-    // two := players[1]
+    done := false
 
-    one.Draw()
+    for !done && !deck.IsEmpty() {
+        for _, p := range players {
+            if p.out {
+                continue
+            }
 
-    one.ShowHand()
-    one.Play()
+            if playersOut(players) == len(players) - 1 {
+                p.Win()
+                done = true
+                break
+            }
+
+            p.isImmune = false
+            fmt.Println()
+            success := p.Draw()
+
+            if !success {
+                fmt.Println("Deck is empty")
+                break
+            }
+
+            fmt.Printf("%s: %s\n", p.Name(), p.ShowHand())
+            p.Play()
+        }
+    }
+
+    // TODO: Implement deck empty end of game conditions
 }

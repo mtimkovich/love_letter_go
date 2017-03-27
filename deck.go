@@ -42,13 +42,23 @@ func (d *Deck) Shuffle() {
 
         d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
     }
+
+    d.index = 0
 }
 
 func (d *Deck) Draw() *Card {
+    if d.IsEmpty() {
+        return nil
+    }
+
     drawn := d.Cards[d.index]
     d.index++
 
     return drawn
+}
+
+func (d *Deck) IsEmpty() bool {
+    return d.index == len(d.Cards)
 }
 
 func (d *Deck) Print() {
