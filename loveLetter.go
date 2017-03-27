@@ -15,6 +15,8 @@ func playersOut(players []*Player) int {
 
 func main() {
     deck := NewDeck()
+
+    // Simulate burning the top card
     deck.Draw()
 
     players := make([]*Player, 0, 4)

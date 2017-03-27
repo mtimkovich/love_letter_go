@@ -14,81 +14,73 @@ func (c *Card) String() string {
 }
 
 func Batman() *Card {
-    c := new(Card)
-    c.name = "Batman"
-    c.value = 1
-    c.rules = "Guess a player's hand"
-    c.action = "guess"
-
-    return c
+    return &Card{
+        "Batman",
+        1,
+        "Guess a player's hand",
+        "guess",
+    }
 }
 
 func Catwoman() *Card {
-    c := new(Card)
-    c.name = "Catwoman"
-    c.value = 2
-    c.rules = "Look at a hand"
-    c.action = "look"
-
-    return c
+    return &Card{
+        "Catwoman",
+        2,
+        "Look at a hand",
+        "look",
+    }
 }
 
 func Bane() *Card {
-    c := new(Card)
-    c.name = "Bane"
-    c.value = 3
-    c.rules = "Compare hands; lower hand is out"
-    c.action = "compare"
-
-    return c
+    return &Card{
+        "Bane",
+        3,
+        "Compare hands; lower hand is out",
+        "compare",
+    }
 }
 
 func Robin() *Card {
-    c := new(Card)
-    c.name = "Robin"
-    c.value = 4
-    c.rules = "Protection until next turn"
-    c.action = "immune"
-
-    return c
+    return &Card{
+        "Robin",
+        4,
+        "Protection until next turn",
+        "immune",
+    }
 }
 
 func PoisonIvy() *Card {
-    c := new(Card)
-    c.name = "Poison Ivy"
-    c.value = 5
-    c.rules = "One player discards their hand"
-    c.action = "discard"
-
-    return c
+    return &Card{
+        "Poison Ivy",
+        5,
+        "One player discards their hand",
+        "discard",
+    }
 }
 
 func TwoFace() *Card {
-    c := new(Card)
-    c.name = "Two-Face"
-    c.value = 6
-    c.rules = "Trade hands"
-    c.action = "trade"
-
-    return c
+    return &Card{
+        "Two-Face",
+        6,
+        "Trade hands",
+        "trade",
+    }
 }
 
 func HarleyQuinn() *Card {
-    c := new(Card)
-    c.name = "Harley Quinn"
-    c.value = 7
-    c.rules = "Discard if caught with TWO-FACE or POISON IVY"
-    c.action = "nop"
-
-    return c
+    return &Card{
+        "Harley Quinn",
+        7,
+        "Discard if caught with TWO-FACE or POISON IVY",
+        "nop",
+    }
 }
 
 func Joker() *Card {
-    c := new(Card)
-    c.name = "Joker"
-    c.value = 8
-    c.rules = "Lose if discarded"
-    c.action = "lose"
-
-    return c
+    return &Card{
+        "Joker",
+        8,
+        "Lose if discarded",
+        "lose",
+    }
 }

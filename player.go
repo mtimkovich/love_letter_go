@@ -244,7 +244,7 @@ func (p *Player) Trade() {
 
     p.hand[0], other.hand[0] = other.hand[0], p.hand[0]
 
-    fmt.Print("New hand: ", p.ShowHand())
+    fmt.Println("New hand: ", p.ShowHand())
 }
 
 func (p *Player) Guess() {
