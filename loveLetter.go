@@ -32,6 +32,8 @@ func main() {
         p.Draw()
     }
 
+    players[0].cpu = false
+
     done := false
 
     for !done && !deck.IsEmpty() {

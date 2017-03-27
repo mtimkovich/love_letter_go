@@ -30,6 +30,16 @@ func remove(a []*Card, i int) []*Card {
     return a[:len(a)-1]
 }
 
+func intInSlice(i int, arr []int) bool {
+    for _, v := range arr {
+        if v == i {
+            return true
+        }
+    }
+
+    return false
+}
+
 func choice(arr []int) int {
     return arr[rand.Intn(len(arr))]
 }
@@ -73,12 +83,10 @@ func intRange(start int, end int) []int {
     return arr
 }
 
-
-func (p *Player) prompt(msg string, me bool) int {
+func (p *Player) prompt(msg string, options []int) int {
     reader := bufio.NewReader(os.Stdin)
 
     for {
-        options := p.options(me)
         fmt.Printf("%s [%s]: ", msg, joinInts(options, ", "))
 
         if p.cpu {
@@ -92,41 +100,28 @@ func (p *Player) prompt(msg string, me bool) int {
 
         idx, err := strconv.Atoi(text)
 
-        if err == nil &&
-           idx >= 0 &&
-           idx < len(p.players) &&
-           (idx != p.index || me) {
-               return idx
+        if err == nil && intInSlice(idx, options) {
+            return idx
         }
     }
 }
 
-func (p *Player) promptNum(msg string, start int, end int) int {
-    reader := bufio.NewReader(os.Stdin)
+func (p *Player) promptPlayer(msg string, me bool) int {
+    options := p.options(me)
 
     for {
-        options := intRange(start, end)
-        fmt.Printf("%s [%s]: ", msg, joinInts(options, ", "))
+        idx := p.prompt(msg, options)
 
-        if p.cpu {
-            o := choice(options)
-            fmt.Println(o)
-            return o
-        }
-
-        text, _ := reader.ReadString('\n')
-        text = strings.Replace(text, "\n", "", -1)
-
-        num, err := strconv.Atoi(text)
-
-        if err == nil &&
-        num >= start &&
-        num < end {
-            return num
+        if me || idx != p.index {
+            return idx
         }
     }
 }
 
+func (p *Player) promptCard(msg string, start int, end int) int {
+    options := intRange(start, end)
+    return p.prompt(msg, options)
+}
 
 func (p *Player) status(msg string) {
     fmt.Printf("%s %s\n", p.Name(), msg)
@@ -150,7 +145,7 @@ func (p *Player) Draw() bool {
 }
 
 func (p *Player) Play() {
-    cardIndex := p.promptNum("Card to play", 0, 2)
+    cardIndex := p.promptCard("Card to play", 0, 2)
     card := p.hand[cardIndex]
     p.status(fmt.Sprintf("played %s", card.String()))
 
@@ -170,7 +165,7 @@ func (p *Player) Lose() {
 }
 
 func (p *Player) Discard() {
-    target := p.prompt("Player to make discard", true)
+    target := p.promptPlayer("Player to make discard", true)
     other := p.players[target]
 
     if other.isImmune {
@@ -199,7 +194,7 @@ func (p *Player) makeDiscard() {
 func (p *Player) Nop() {}
 
 func (p *Player) Look() {
-    target := p.prompt("Player's hand to look at", false)
+    target := p.promptPlayer("Player's hand to look at", false)
     other := p.players[target]
 
     if other.isImmune {
@@ -211,7 +206,7 @@ func (p *Player) Look() {
 }
 
 func (p *Player) Compare() {
-    target := p.prompt("Player whose hand to compare to", false)
+    target := p.promptPlayer("Player whose hand to compare to", false)
     other := p.players[target]
 
     if other.isImmune {
@@ -234,7 +229,7 @@ func (p *Player) Compare() {
 }
 
 func (p *Player) Trade() {
-    target := p.prompt("Player to trade hands with", false)
+    target := p.promptPlayer("Player to trade hands with", false)
     other := p.players[target]
 
     if other.isImmune {
@@ -248,9 +243,9 @@ func (p *Player) Trade() {
 }
 
 func (p *Player) Guess() {
-    target := p.prompt("Player to guess", false)
+    target := p.promptPlayer("Player to guess", false)
     other := p.players[target]
-    guessNum := p.promptNum("Guess card in player's hand", 2, 9)
+    guessNum := p.promptCard("Guess card in player's hand", 2, 9)
     fmt.Printf("%s had %s\n", other.Name(), other.hand[0].String()) 
 
     if guessNum == other.hand[0].value {
