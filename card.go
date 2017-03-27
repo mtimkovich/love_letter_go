@@ -14,7 +14,7 @@ func (c *Card) String() string {
 }
 
 func Batman() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Batman"
     c.value = 1
     c.rules = "Guess a player's hand"
@@ -24,7 +24,7 @@ func Batman() *Card {
 }
 
 func Catwoman() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Catwoman"
     c.value = 2
     c.rules = "Look at a hand"
@@ -34,7 +34,7 @@ func Catwoman() *Card {
 }
 
 func Bane() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Bane"
     c.value = 3
     c.rules = "Compare hands; lower hand is out"
@@ -44,7 +44,7 @@ func Bane() *Card {
 }
 
 func Robin() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Robin"
     c.value = 4
     c.rules = "Protection until next turn"
@@ -54,7 +54,7 @@ func Robin() *Card {
 }
 
 func PoisonIvy() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Poison Ivy"
     c.value = 5
     c.rules = "One player discards their hand"
@@ -64,7 +64,7 @@ func PoisonIvy() *Card {
 }
 
 func TwoFace() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Two-Face"
     c.value = 6
     c.rules = "Trade hands"
@@ -74,7 +74,7 @@ func TwoFace() *Card {
 }
 
 func HarleyQuinn() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Harley Quinn"
     c.value = 7
     c.rules = "Discard if caught with TWO-FACE or POISON IVY"
@@ -84,7 +84,7 @@ func HarleyQuinn() *Card {
 }
 
 func Joker() *Card {
-    c := &Card{}
+    c := new(Card)
     c.name = "Joker"
     c.value = 8
     c.rules = "Lose if discarded"

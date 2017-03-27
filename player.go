@@ -27,6 +27,10 @@ func remove(a []*Card, i int) []*Card {
     return a[:len(a)-1]
 }
 
+func (p *Player) Name() string {
+    return fmt.Sprintf("Player %s", p.name)
+}
+
 func (p *Player) options(me bool) string {
     var options bytes.Buffer
     numeros := make([]string, 0, len(p.players))
@@ -64,27 +68,27 @@ func (p *Player) prompt(msg string, me bool) int {
     }
 }
 
-func strRange(end int) string {
+func strRange(start int, end int) string {
     arr := make([]string, 0)
-    for i := 0; i < end; i++ {
+    for i := start; i < end; i++ {
         arr = append(arr, strconv.Itoa(i))
     }
 
     return strings.Join(arr, ", ")
 }
 
-func (p *Player) promptNum(msg string, end int) int {
+func (p *Player) promptNum(msg string, start int, end int) int {
     reader := bufio.NewReader(os.Stdin)
 
     for {
-        fmt.Printf("%s [%s]: ", msg, strRange(end))
+        fmt.Printf("%s [%s]: ", msg, strRange(start, end))
         text, _ := reader.ReadString('\n')
         text = strings.Replace(text, "\n", "", -1)
 
         num, err := strconv.Atoi(text)
 
         if err == nil &&
-        num >= 0 &&
+        num >= start &&
         num < end {
             return num
         }
@@ -92,7 +96,7 @@ func (p *Player) promptNum(msg string, end int) int {
 }
 
 func (p *Player) status(msg string) {
-    fmt.Printf("Player %s %s\n", p.name, msg)
+    fmt.Printf("%s %s\n", p.Name(), msg)
 }
 
 func (p *Player) Draw() {
@@ -101,14 +105,12 @@ func (p *Player) Draw() {
 }
 
 func (p *Player) Play() {
-    cardIndex := p.promptNum("Card to play", 2)
+    cardIndex := p.promptNum("Card to play", 0, 2)
     card := p.hand[cardIndex]
 
     if action, e := p.actionMap[card.action]; e {
         p.hand = remove(p.hand, cardIndex)
         action()
-    } else {
-        fmt.Printf("TODO: Implement %s\n", card.action)
     }
 }
 
@@ -172,8 +174,8 @@ func (p *Player) Compare() {
         return
     }
 
-    fmt.Printf("Player %s has %s, Player %s has %s\n",
-               p.name, p.hand[0].String(), other.name, other.hand[0].String())
+    fmt.Printf("%s has %s, %s has %s\n",
+               p.Name(), p.hand[0].String(), other.Name(), other.hand[0].String())
 
     c := p.hand[0].value - other.hand[0].value
 
@@ -204,10 +206,11 @@ func (p *Player) Trade() {
 func (p *Player) Guess() {
     target := p.prompt("Player to guess", false)
     other := p.players[target]
-    guessNum := p.promptNum("Guess card in player's hand", 9)
+    guessNum := p.promptNum("Guess card in player's hand", 2, 9)
+    fmt.Printf("%s had %s\n", other.Name(), other.hand[0].String()) 
 
     if guessNum == other.hand[0].value {
-        p.status(fmt.Sprintf("guessed correctly; Player %s is out", other.name))
+        p.status(fmt.Sprintf("guessed correctly; %s is out", other.Name()))
         other.out = true
     }
 }
@@ -225,7 +228,7 @@ func (p *Player) ShowHand() {
 }
 
 func NewPlayer(name string, deck *Deck) *Player {
-    p := &Player{}
+    p := new(Player)
 
     p.actionMap = map[string]func(){
         "immune": p.Immune,

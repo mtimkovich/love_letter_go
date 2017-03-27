@@ -12,7 +12,7 @@ type Deck struct {
 }
 
 func NewDeck() *Deck {
-    d := &Deck{}
+    d := new(Deck)
     d.index = 0
     deck := make([]*Card, 0, 16)
 
