@@ -127,11 +127,6 @@ func (p *Player) status(msg string) {
     fmt.Printf("%s %s\n", p.Name(), msg)
 }
 
-func (p *Player) Win() {
-    p.status("wins")
-    p.points++
-}
-
 func (p *Player) Draw() bool {
     p.status("draws a card")
     card := p.deck.Draw()

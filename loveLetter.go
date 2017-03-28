@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+    "fmt"
+    "strings"
+)
 
 func playersOut(players []*Player) int {
     out := 0
@@ -11,6 +14,21 @@ func playersOut(players []*Player) int {
     }
 
     return out
+}
+
+func maxCardValue(players []*Player) int {
+    max := 0
+    for _, p := range players {
+        if len(p.hand) > 0 {
+            value := p.hand[0].value
+
+            if !p.out && value > max {
+                max = value
+            }
+        }
+    }
+
+    return max
 }
 
 func main() {
@@ -32,19 +50,19 @@ func main() {
         p.Draw()
     }
 
-    players[0].cpu = false
+    // players[0].cpu = false
 
-    done := false
+    winners := make([]string, 0, 4)
 
-    for !done && !deck.IsEmpty() {
+    for len(winners) == 0 && !deck.IsEmpty() {
         for _, p := range players {
             if p.out {
                 continue
             }
 
             if playersOut(players) == len(players) - 1 {
-                p.Win()
-                done = true
+                p.points++
+                winners = append(winners, p.Name())
                 break
             }
 
@@ -62,5 +80,28 @@ func main() {
         }
     }
 
-    // TODO: Implement deck empty end of game conditions
+    if len(winners) == 0 {
+        fmt.Println()
+
+        winningValue := maxCardValue(players)
+
+        for _, p := range players {
+            if !p.out {
+                // TODO Sometimes players are not out, but also
+                // have empty hands, which shouldn't be possible
+                fmt.Println(p.Name(), "has", p.hand[0].String())
+
+                if p.hand[0].value == winningValue {
+                    winners = append(winners, p.Name())
+                }
+            }
+        }
+    }
+
+    fmt.Println()
+    if len(winners) == 1 {
+        fmt.Println("Winner is", winners[0])
+    } else {
+        fmt.Println("Winners are", strings.Join(winners, " and "))
+    }
 }
